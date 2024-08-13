@@ -1,0 +1,66 @@
+<div>
+  <div>
+    {{displayMonth}}
+  </div>
+  <div>
+    <input type="button" (click)="setCurrentMonth()" value="today" />
+    <input type="button" (click)="decreaseMonth()" value="-" />
+    <input type="button" (click)="increaseMonth()" value="+" />
+  </div>
+  <app-modal>
+    <form class="modal-form">
+      <header>
+        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" class="form-calendar"
+          height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zm-3.5-7h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z">
+          </path>
+        </svg>
+      </header>
+      <div class="form-body">
+        <h2>{{selectedWeek}}, {{selectedMonth}} {{selectedYear}}</h2>
+        <input type="time" name="time" value="08:00 AM" />
+        <input type="text" name="title" placeholder="Add Title" required maxlength="30" />
+        <input type="text" name="description" placeholder="Add a description" required />
+        <form>
+          <div class="search">
+            <input class="search-box" type="text" placeholder="Enter City" />
+            <button class="weather-btn" type="button">Get Weather</button>
+          </div>
+        </form>
+        <div class="color-picker">
+          <p>Choose a color:</p>
+          <div class="color-buttons">
+            <button class="color-button selected" type="button" style="background-color: rgb(255, 87, 51);"></button>
+            <button class="color-button selected" type="button" style="background-color: rgb(51, 255, 87);"></button>
+            <button class="color-button selected" type="button" style="background-color: rgb(51, 122, 255);"></button>
+            <button class="color-button selected" type="button" style="background-color: rgb(255, 51, 249);"></button>
+            <button class="color-button selected" type="button" style="background-color: rgb(255, 215, 0);"></button>
+          </div>
+        </div>
+      </div>
+      <footer class="form-footer">
+        <button class="save-btn" type="button">Save</button>
+      </footer>
+    </form>
+  </app-modal>
+</div>
+
+<table class='calendar-table' *ngIf="calendar">
+  <thead>
+    <tr>
+      <th *ngFor="let weekName of weekNames">{{weekName}}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let row of calendar | chunk: 7; let i = index">
+      <td class="calendar-day" [ngClass]="{'past-date': c.isPastDate, 'today': c.isToday}"
+        *ngFor="let c of row; let j = index"
+        (click)="openModal(weekNames[c.date.getDay() -1], monthNames[c.date.getMonth()], c.date.getFullYear())">
+        <div class="calendar-day-header" [ngClass]="{'actual-date': c.isToday}">
+          <strong>{{c.date.getDate()}}</strong>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
