@@ -1,52 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
+import { ChunkPipe } from './chuckpipe';
+import { CalendarDay } from './calendarday';
+
+import { ApiService } from '../api/api.service';
+import type { Weather } from '../interfaces/weather';
 import { ModalService } from '../modal/modal.service';
-import { ModalComponent } from '../modal/modal.component';
-
-export class CalendarDay {
-  public date: Date;
-  public title?: string;
-  public isToday: boolean;
-  public isPastDate: boolean;
-
-  public getDateString() {
-    return this.date.toISOString().split('T')[0];
-  }
-
-  constructor(d: Date) {
-    this.date = d;
-    this.isPastDate = d.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
-    this.isToday = d.setHours(0, 0, 0, 0) == new Date().setHours(0, 0, 0, 0);
-  }
-}
-
-@Pipe({
-  name: 'chunk',
-  standalone: true,
-})
-export class ChunkPipe implements PipeTransform {
-  transform(calendarDaysArray: any, chunkSize: number): any {
-    let weekDays: string[] = [];
-    let calendarDays: string[] = [];
-
-    calendarDaysArray.map((day: string, index: number) => {
-      weekDays.push(day);
-      if (++index % chunkSize === 0) {
-        calendarDays.push(weekDays as never);
-        weekDays = [];
-      }
-    });
-    return calendarDays;
-  }
-}
+import { CalendarModalComponent } from '../calendarmodal/calendarmodal.component';
+import type { Reminder } from '../interfaces/reminder';
 
 @Component({
   standalone: true,
   selector: 'app-calendar',
   styleUrl: './calendar.component.scss',
   templateUrl: './calendar.component.html',
-  imports: [CommonModule, ChunkPipe, ModalComponent],
+  imports: [CommonModule, ChunkPipe, CalendarModalComponent],
 })
 export class CalendarComponent implements OnInit {
   public calendar: CalendarDay[] = [];
@@ -65,45 +34,55 @@ export class CalendarComponent implements OnInit {
     'December',
   ];
   public weekNames = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
   ];
+  public displayYear?: string;
   public displayMonth?: string;
-  private monthIndex: number = 0;
-
+  public selectedDay?: string;
   public selectedWeek?: string;
   public selectedYear?: string;
   public selectedMonth?: string;
 
-  constructor(private modalService: ModalService) {}
+  public reminderTime: string = '';
+  public reminderColor: string = '';
+  public reminderTitle: string = '';
+  public reminderCityName: string = '';
+  public reminderDescription: string = '';
+
+  public showWeather?: boolean;
+  public weather: Weather = {} as Weather;
+
+  private selectedDate?: Date;
+  private monthIndex: number = 0;
+
+  constructor(
+    private modalService: ModalService,
+    private apiService: ApiService
+  ) {
+  }
 
   ngOnInit(): void {
     this.generateCalendarDays(this.monthIndex);
   }
 
   private generateCalendarDays(monthIndex: number): void {
-    // we reset our calendar
     this.calendar = [];
-
-    // we set the date
-    let day: Date = new Date(
+    const day: Date = new Date(
       new Date().setMonth(new Date().getMonth() + monthIndex)
     );
-
-    // set the dispaly month for UI
+    this.displayYear = String(day.getFullYear());
     this.displayMonth = this.monthNames[day.getMonth()];
-
-    let startingDateOfCalendar = this.getStartDateForCalendar(day);
-
-    let dateToAdd = startingDateOfCalendar;
-
+    let dateToAdd = this.getStartDateForCalendar(day);
     for (var i = 0; i < 42; i++) {
-      this.calendar.push(new CalendarDay(new Date(dateToAdd)));
+      const calendarday = new CalendarDay();
+      calendarday.addDate(new Date(dateToAdd));
+      this.calendar.push(calendarday);
       dateToAdd = new Date(dateToAdd.setDate(dateToAdd.getDate() + 1));
     }
   }
@@ -123,6 +102,16 @@ export class CalendarComponent implements OnInit {
     return startingDateOfCalendar;
   }
 
+  public clearForm() {
+    this.reminderTime = '';
+    this.reminderColor = '';
+    this.reminderTitle = '';
+    this.showWeather = false;
+    this.reminderCityName = '';
+    this.weather = {} as Weather;
+    this.reminderDescription = '';
+  }
+
   public increaseMonth() {
     this.monthIndex++;
     this.generateCalendarDays(this.monthIndex);
@@ -138,10 +127,45 @@ export class CalendarComponent implements OnInit {
     this.generateCalendarDays(this.monthIndex);
   }
 
-  openModal(weekName: string, monthName: string, year: string): void {
-    this.selectedYear = year;
-    this.selectedWeek = weekName;
-    this.selectedMonth = monthName;
-    this.modalService.open();
+  public openModal(date: Date): void {
+    this.selectedDate = date;
+    this.selectedDay = String(date.getDate());
+    this.selectedYear = String(date.getUTCFullYear());
+    this.selectedWeek = this.weekNames[date.getDay() - 1];
+    this.selectedMonth = this.monthNames[date.getMonth()];
+    this.modalService.open(String(date));
+  }
+
+  public handleGetCity(cityName: string) {
+    if (cityName.length) {
+      this.apiService.getCityData(cityName.trim()).subscribe({
+        next: (data) => {
+          this.weather = data;
+          this.showWeather = true;
+        },
+        error: (error) => {
+          this.showWeather = false;
+          console.error('Error getting city data: ', error);
+        },
+      });
+      return;
+    }
+
+    this.showWeather = false;
+  }
+
+  public handleSave(formData: string) {
+    const form = JSON.parse(formData) as Reminder;
+
+    if (this.selectedDate) {
+      const day = this.calendar.find(
+        (day) => day.date?.toDateString() === this.selectedDate?.toDateString()
+      );
+      if (day) {
+        day.addReminder(form);
+        this.modalService.close(String(day.date));
+      }
+      this.clearForm();
+    }
   }
 }

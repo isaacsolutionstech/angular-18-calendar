@@ -1,0 +1,44 @@
+<app-modal [modalKey]="calendarModalKey" (clear)="clear()">
+  <form class="modal-form">
+    <header class="form-header">
+      <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" class="form-calendar"
+        height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zm-3.5-7h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z">
+        </path>
+      </svg>
+    </header>
+    <div class="form-body">
+      <h2 class="form-date">{{selectedWeek}}, {{selectedDay}} of {{selectedMonth}} {{selectedYear}}</h2>
+      <input type="time" value="08:00 AM" [(ngModel)]="reminderTime" [ngModelOptions]="{ standalone: true }" />
+      <input type="text" placeholder="Add Title" required maxlength="30" [(ngModel)]="reminderTitle"
+        [ngModelOptions]="{ standalone: true }" />
+      <input type="text" placeholder="Add a description" required [(ngModel)]="reminderDescription"
+        [ngModelOptions]="{ standalone: true }" />
+      <form>
+        <div class="search">
+          <input class="search-box" type="text" placeholder="Enter City" [(ngModel)]="reminderCityName"
+            [ngModelOptions]="{ standalone: true }" />
+          <button class="weather-btn" type="button" (click)="getCity()">Get Weather</button>
+        </div>
+      </form>
+      <div class="weather" *ngIf="showWeather">
+        <h3>{{weather?.name}}</h3>
+        <p>{{weather?.main?.temp}}°C</p>
+        <p>{{weather?.main?.humidity}}% Humidity</p>
+        <p>{{weather?.wind?.speed}} km/h winds</p>
+      </div>
+      <div class="color-picker">
+        <p>Choose a color:</p>
+        <div class="color-buttons">
+          <button class="color-button" type="button" *ngFor="let color of colors"
+            [ngStyle]="{'background-color': color}" [ngClass]="{'selected': isColorSelected(color)}"
+            (click)="saveColor(color)"></button>
+        </div>
+      </div>
+    </div>
+    <footer class="form-footer">
+      <button class="save-btn" type="button" (click)="save()">Save</button>
+    </footer>
+  </form>
+</app-modal>

@@ -1,5 +1,6 @@
+import type { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { ModalService } from './modal.service';
 
@@ -11,17 +12,30 @@ import { ModalService } from './modal.service';
   templateUrl: './modal.component.html',
 })
 export class ModalComponent {
-  isVisible = false;
+  @Input() modalKey?: string = '';
+  @Output() clear = new EventEmitter<string>();
+
+  public isVisible = false;
+  private modalSubscription?: Subscription;
 
   constructor(private modalService: ModalService) {}
 
   ngOnInit(): void {
-    this.modalService.modalState$.subscribe((state) => {
-      this.isVisible = state;
-    });
+    this.modalSubscription = this.modalService.modalState$.subscribe(
+      (state) => {
+        this.isVisible = this.modalKey ? state[this.modalKey] || false : false;
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.modalSubscription?.unsubscribe();
   }
 
   close(): void {
-    this.modalService.open();
+    if (this.modalKey) {
+      this.modalService.close(this.modalKey);
+    }
+    this.clear.emit();
   }
 }

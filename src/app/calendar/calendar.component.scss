@@ -1,16 +1,78 @@
+.header {
+  display: flex;
+  padding: 10px 4px;
+  flex-direction: row;
+  align-items: center;
+  background-color: #f8f2fd;
+
+  &-logo {
+    width: 30px;
+    margin: 10px;
+    height: 30px;
+    color: #3a075f;
+  }
+
+  &-title {
+    margin: 0 16px;
+    font-size: 34px;
+    font-weight: 700;
+    background: linear-gradient(0deg, #e32cff, #3a075f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  &-buttons {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+
+    &-today-btn {
+      cursor: pointer;
+      font-weight: 700;
+      margin: 0px 10px;
+      color: #474747;
+      padding: 10px 20px;
+      border-radius: 5px;
+      background: white;
+      border: 1px solid #bbbbbb;
+      box-shadow: #00000029 0 3px 6px, #0000003b 0 3px 6px;
+    }
+  
+    &-chevron-btn {
+      border: none;
+      margin: 10px;
+      outline: none;
+      display: flex;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 50%;
+      align-items: center;
+      background-color: #fff;
+    }
+  }
+
+  &-display-month-year {
+    color: #474747;
+    font-size: 22px;
+    margin-left: 10px;
+  }
+}
+
 .calendar-table {
-  border-collapse: collapse;
   width: 100%;
   max-width: 100%;
   margin-bottom: 1rem;
-  border: 1px solid #dee2e6;
   background-color: #fff;
+  border-collapse: collapse;
+  border: 1px solid #dee2e6;
 }
 
 .calendar-table thead th {
+  width: 14.2%;
   vertical-align: bottom;
   border-bottom: 2px solid #dee2e6;
-  width: 14.2%;
 }
 
 .calendar-table td,
@@ -26,9 +88,17 @@
 }
 
 .calendar-day {
-  height: 12vh;
-  max-height: 12vh;
+  height: 11.2vh;
   cursor: pointer;
+  max-height: 12vh;
+
+  .calendar-day-header {
+    margin-bottom: 16px;
+  }
+
+  .calendar-day-reminder {
+    margin-bottom: 8px;
+  }
 }
 
 .calendar-items-wrapper {
@@ -54,15 +124,13 @@
   strong {
     top: 4px;
     left: 5px;
-    z-index: 1;
-    position: absolute;
   }
 
   &::after {
     content: "";
-    top: 0px;
-    left: 0px;
-    z-index: 0;
+    top: -3px;
+    left: -5px;
+    z-index: -1;
     width: 30px;
     height: 30px;
     position: absolute;
