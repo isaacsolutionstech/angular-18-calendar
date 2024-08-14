@@ -60,31 +60,39 @@ export class CalendarComponent implements OnInit {
 
   private selectedDate?: Date;
   private monthIndex: number = 0;
+  private remindersMap: Map<string, Reminder[]> = new Map();
 
   constructor(
     private modalService: ModalService,
     private apiService: ApiService
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     this.generateCalendarDays(this.monthIndex);
   }
 
   private generateCalendarDays(monthIndex: number): void {
-    this.calendar = [];
+    const newCalendar: CalendarDay[] = [];
     const day: Date = new Date(
       new Date().setMonth(new Date().getMonth() + monthIndex)
     );
     this.displayYear = String(day.getFullYear());
     this.displayMonth = this.monthNames[day.getMonth()];
     let dateToAdd = this.getStartDateForCalendar(day);
-    for (var i = 0; i < 42; i++) {
+
+    for (let i = 0; i < 42; i++) {
       const calendarday = new CalendarDay();
       calendarday.addDate(new Date(dateToAdd));
-      this.calendar.push(calendarday);
+
+      // Retrieve any existing reminders for the date
+      const dateString = calendarday.getDateString();
+      calendarday.reminders = this.remindersMap.get(dateString) || [];
+
+      newCalendar.push(calendarday);
       dateToAdd = new Date(dateToAdd.setDate(dateToAdd.getDate() + 1));
     }
+
+    this.calendar = newCalendar;
   }
 
   private getStartDateForCalendar(selectedDate: Date) {
@@ -155,14 +163,32 @@ export class CalendarComponent implements OnInit {
   }
 
   public handleSave(formData: string) {
-    const form = JSON.parse(formData) as Reminder;
+    const form = {
+      ...JSON.parse(formData),
+      id: Date.now().toString(),
+    } as Reminder;
 
     if (this.selectedDate) {
       const day = this.calendar.find(
         (day) => day.date?.toDateString() === this.selectedDate?.toDateString()
       );
       if (day) {
-        day.addReminder(form);
+        const dateString = day.getDateString();
+        const currentReminders = this.remindersMap.get(dateString) || [];
+        const existingReminderIndex = currentReminders.findIndex(
+          (reminder) => reminder.id === form.id
+        );
+
+        if (existingReminderIndex === -1) {
+          currentReminders.push(form);
+          this.remindersMap.set(dateString, currentReminders);
+          day.addReminder(form);
+        } else {
+          currentReminders[existingReminderIndex] = form;
+          this.remindersMap.set(dateString, currentReminders);
+          day.reminders[existingReminderIndex] = form;
+        }
+
         this.modalService.close(String(day.date));
       }
       this.clearForm();

@@ -9,7 +9,8 @@ export class CalendarDay {
   public addDate(date: Date) {
     this.date = date;
     this.isToday = date.setHours(0, 0, 0, 0) == new Date().setHours(0, 0, 0, 0);
-    this.isPastDate = date.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
+    this.isPastDate =
+      date.setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
   }
 
   public getDateString(): string {
@@ -17,6 +18,13 @@ export class CalendarDay {
   }
 
   public addReminder(reminder: Reminder): void {
-    this.reminders.push(reminder);
+    const existingReminderIndex = this.reminders.findIndex(
+      (r) => r.id === reminder.id
+    );
+    if (existingReminderIndex === -1) {
+      this.reminders.push(reminder);
+    } else {
+      this.reminders[existingReminderIndex] = reminder;
+    }
   }
 }

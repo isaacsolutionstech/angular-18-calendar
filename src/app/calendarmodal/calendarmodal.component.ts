@@ -52,10 +52,11 @@ export class CalendarModalComponent {
   public clear() {
     this.clearForm.emit();
     this.reminderTime = '';
-    this.reminderColor = '';
     this.reminderTitle = '';
     this.reminderCityName = '';
     this.reminderDescription = '';
+    this.reminderColor = this.colors[0];
+    this.selectedColor = this.colors[0];
   }
 
   public getCity() {

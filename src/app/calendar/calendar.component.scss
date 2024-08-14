@@ -97,7 +97,11 @@
   }
 
   .calendar-day-reminder {
-    margin-bottom: 8px;
+    display: flex;
+    padding: 0px 8px;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    align-items: center;
   }
 }
 
