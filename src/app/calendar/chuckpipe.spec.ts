@@ -1,7 +1,7 @@
-import { Chuckpipe } from './chuckpipe';
+import { ChunkPipe } from './chuckpipe';
 
 describe('Chuckpipe', () => {
   it('should create an instance', () => {
-    expect(new Chuckpipe()).toBeTruthy();
+    expect(new ChunkPipe()).toBeTruthy();
   });
 });
